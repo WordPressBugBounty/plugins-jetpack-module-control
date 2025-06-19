@@ -9,7 +9,7 @@
  * Network: true
  * Text Domain: jetpack-module-control
  * License: GPL2+
- * Version: 1.7
+ * Version: 1.7.1
  *
  * @package Module Control for Jetpack
  */
@@ -42,16 +42,13 @@
 
 defined( 'WPINC' ) || die( 'No direct access allowed.' );
 
-define( 'JMC_VERSION', '1.7' );
 define( 'JMC_BASENAME', plugin_basename( __FILE__ ) );
-define( 'JMC_DIR', __DIR__ );
 
 add_filter( 'jetpack_get_default_modules', array( '\JMC\Plugin', 'manual_control' ), 99 );
 add_filter( 'jetpack_offline_mode', array( '\JMC\Plugin', 'development_mode' ) );
 add_filter( 'jetpack_get_available_modules', array( '\JMC\Plugin', 'blacklist' ) );
 
 add_action( 'admin_init', array( '\JMC\Admin', 'init' ), 11 );
-add_filter( 'wp_default_autoload_value', array( '\JMC\Admin', 'autoload_value' ), 10, 2 );
 
 register_activation_hook( __FILE__, array( '\JMC\Admin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( '\JMC\Admin', 'deactivate' ) );
@@ -77,7 +74,7 @@ spl_autoload_register(
 		$path_array = explode( '\\', $class_name );
 		$class_name = array_pop( $path_array );
 		$class_name = str_replace( '_', '-', $class_name );
-		$file       = realpath( JMC_DIR ) . DIRECTORY_SEPARATOR . \implode( DIRECTORY_SEPARATOR, $path_array ) . DIRECTORY_SEPARATOR . 'class-' . $class_name . '.php';
+		$file       = realpath( __DIR__ ) . DIRECTORY_SEPARATOR . \implode( DIRECTORY_SEPARATOR, $path_array ) . DIRECTORY_SEPARATOR . 'class-' . $class_name . '.php';
 
 		// If the file exists for the class name, load it.
 		if ( file_exists( $file ) ) {
