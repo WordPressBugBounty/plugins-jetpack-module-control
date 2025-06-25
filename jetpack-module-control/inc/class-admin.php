@@ -7,6 +7,8 @@
 
 namespace JMC;
 
+use JMC\Plugin;
+
 /**
  * Module Control for Jetpack Admin Class
  *
@@ -59,8 +61,6 @@ class Admin {
 			\add_settings_field( 'jetpack_mc_development_mode', __( 'Offline Mode', 'jetpack-module-control' ), array( '\JMC\Settings', 'development_mode_settings' ), $settings, 'jetpack-module-control' );
 			\add_settings_field( 'jetpack_mc_blacklist', __( 'Blacklist Modules', 'jetpack-module-control' ), array( '\JMC\Settings', 'blacklist_settings' ), $settings, 'jetpack-module-control' );
 		}
-
-		\add_filter( 'wp_default_autoload_value', array( __CLASS__, 'autoload_value' ), 10, 2 );
 	}
 
 	/**
@@ -179,6 +179,36 @@ class Admin {
 			}
 		} else {
 			\wp_set_options_autoload( $options_autoload, false );
+		}
+	}
+
+	/**
+	 * Control admin submenus.
+	 * 
+	 * @since 1.7.2
+	 */
+	public static function control_submenus() {
+		if ( Plugin::development_mode() ) {
+			// Make sure all known connection dependant submenus are removed.
+			// These can be present if a module was activated before development mode was activated.
+			\remove_submenu_page( 'jetpack', 'jetpack-search' );
+			\remove_submenu_page( 'jetpack', 'jetpack-social' );
+		}
+
+		$blacklist = Plugin::get_option( 'jetpack_mc_blacklist' );
+
+		if ( empty( $blacklist ) ) {
+			return;
+		}
+
+		if ( \in_array( 'search', $blacklist ) ) {
+			// Remove Jetpack Search submenu.
+			\remove_submenu_page( 'jetpack', 'jetpack-search' );
+		}
+
+		if ( \in_array( 'publicize', $blacklist ) ) {
+			// Remove Jetpack Social submenu.
+			\remove_submenu_page( 'jetpack', 'jetpack-social' );
 		}
 	}
 }
