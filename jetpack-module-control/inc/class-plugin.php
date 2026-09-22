@@ -31,6 +31,14 @@ class Plugin {
 	private static $development_mode;
 
 	/**
+	 * Holds the AI disabled option.
+	 *
+	 * @since 1.7.5
+	 * @var bool|null
+	 */
+	private static $ai_disabled;
+
+	/**
 	 * Holds the blacklist of Jetpack modules.
 	 *
 	 * @since 1.7
@@ -52,8 +60,8 @@ class Plugin {
 	public static function get_option( $option_name ) {
 		$value = false;
 
-		// check if subsite override allowed.
-		if ( ! \is_multisite() || \get_site_option( 'jetpack_mc_subsite_override' ) ) {
+		// Single site active or subsite override allowed.
+		if ( ! \is_multisite() || ! \is_plugin_active_for_network( \JMC_BASENAME ) || \get_site_option( 'jetpack_mc_subsite_override' ) ) {
 			// Get our autoload setting from wp_load_alloptions to avoid loading the option table.
 			// $all   = \wp_load_alloptions();
 			// $value = isset( $all[ $option_name ] ) ? \maybe_unserialize( $all[ $option_name ] ) : false;.
@@ -75,6 +83,8 @@ class Plugin {
 	 * First modelled after Manual Control for Jetpack by Mark Jaquith http://coveredwebservices.com/
 	 * To be converted to allow selected modules instead of all or none.
 	 *
+	 * Hooked to jetpack_get_default_modules filter.
+	 *
 	 * @since 0.1
 	 * @see add_filter()
 	 * @param array $modules Modules array.
@@ -91,6 +101,8 @@ class Plugin {
 	 * Activates Development Mode by returning true on jetpack_development_mode filter.
 	 * Based on http://jeremy.hu/customize-the-list-of-modules-available-in-jetpack/
 	 *
+	 * Hooked to jetpack_offline_mode filter.
+	 *
 	 * @since 1.0
 	 * @see add_filter()
 	 */
@@ -104,7 +116,9 @@ class Plugin {
 
 	/**
 	 * Blacklist Jetpack modules
-	 * Modelled after ParhamG's blacklist_jetpack_modules.php https://gist.github.com/ParhamG/6494979
+	 * Modelled after ParhamG's blacklist_jetpack_modules.php https://gist.github.com/ParhamG/
+	 *
+	 * Hooked to jetpack_get_available_modules filter.
 	 *
 	 * @since 0.1
 	 * @param array $modules Modules array.
@@ -118,21 +132,5 @@ class Plugin {
 		}
 
 		return ! empty( self::$blacklist ) ? \array_diff_key( $modules, self::$blacklist ) : $modules;
-	}
-
-	/**
-	 * Optionally disable AI. Currenly only if in Offline Mode.
-	 *
-	 * @since 1.7.5
-	 *
-	 * @param bool $ai_enabled AI assistant state.
-	 * @return bool
-	 */
-	public static function ai_enabled( $ai_enabled ) {
-		if ( self::development_mode() ) {
-			$ai_enabled = false;
-		}
-
-		return $ai_enabled;
 	}
 }
